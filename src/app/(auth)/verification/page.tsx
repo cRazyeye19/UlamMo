@@ -1,132 +1,61 @@
 "use client";
 
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Typography, Box, CircularProgress } from "@mui/material";
+import AuthLayout from "@/app/(auth)/_components/auth-layout";
+import AuthHeader from "@/app/(auth)/_components/auth-header";
+import AuthContainer from "@/app/(auth)/_components/auth-container";
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
-import { useState } from "react";
+import { useEmailVerification } from "@/app/(auth)/_hooks/use-email-verification";
 
-import AuthContainer from "../_components/auth-container";
-import AuthHeader from "../_components/auth-header";
-import AuthLayout from "../_components/auth-layout";
-import Button from "../../_components/common/button";
-import Link from "../../_components/common/link";
-import FormTextField from "../../_components/form/form-text-field";
-import { OtpSchema, otpSchema } from "../_components/schemas";
-import { useSupabase } from "@/app/_components/supabase/supabase-provider";
+const EmailVerificationInfo = () => {
+  const { isLoading, errorMessage, handleCloseSnackbar } =
+    useEmailVerification();
 
-const VerificationPage = () => {
-  const supabase = useSupabase();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const { control, handleSubmit } = useForm<OtpSchema>({
-    resolver: zodResolver(otpSchema),
-    defaultValues: {
-      otp: "",
-    },
-  });
-
-  const onSubmit = async (data: OtpSchema) => {
-    if (!email) {
-      console.error("Email not found for OTP verification.");
-      // TODO: Display error message to the user
-      return;
-    }
-
-    const { error } = await supabase.auth.verifyOtp({
-      email: email,
-      token: data.otp,
-      type: "signup",
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-    } else {
-      setSuccessMessage("OTP verified successfully!");
-      router.push("/");
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (!email) {
-      console.error("Email not found for resending OTP.");
-      // TODO: Display error message to the user
-      return;
-    }
-
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email,
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-    } else {
-      setSuccessMessage("OTP resent successfully!");
-    }
-  };
+  if (isLoading) {
+    return (
+      <AuthLayout>
+        <AuthContainer>
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <CircularProgress />
+            <Typography variant="body1" sx={{ mt: 2 }}>
+              Verifying your email...
+            </Typography>
+          </Box>
+        </AuthContainer>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
       <AuthHeader
-        title="Verification"
-        subtitle="Enter the verification code we've sent to your email"
+        title="Verify Your Email"
+        subtitle="We've sent a confirmation link to your email address."
       />
-
       <AuthContainer>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack alignItems="center" spacing={4}>
-            <Typography variant="h6">Verification Code</Typography>
-
-            <FormTextField
-              control={control}
-              name="otp"
-              label="OTP"
-              fullWidth
-              slotProps={{
-                input: {
-                  inputProps: {
-                    maxLength: 6,
-                  },
-                },
-              }}
+        <Box sx={{ textAlign: "center" }}>
+          {errorMessage ? (
+            <SnackbarAlert
+              message={errorMessage}
+              severity="error"
+              onClose={handleCloseSnackbar}
             />
-
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Confirm
-            </Button>
-
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="body1">
-                Didn&apos;t receive the code?{" "}
-                <Link href="#" onClick={handleResendOtp}>
-                  Resend
-                </Link>
+          ) : (
+            <>
+              <Typography variant="body1" gutterBottom>
+                Please check your inbox and click the confirmation link to
+                activate your account.
               </Typography>
-            </Box>
-          </Stack>
-        </form>
+              <Typography variant="body2" color="text.secondary">
+                Didn&apos;t receive the email? Check your spam folder or try
+                signing up again.
+              </Typography>
+            </>
+          )}
+        </Box>
       </AuthContainer>
-
-      <SnackbarAlert
-        message={errorMessage}
-        severity="error"
-        onClose={() => setErrorMessage(null)}
-      />
-      <SnackbarAlert
-        message={successMessage}
-        severity="success"
-        onClose={() => setSuccessMessage(null)}
-      />
     </AuthLayout>
   );
 };
 
-export default VerificationPage;
+export default EmailVerificationInfo;

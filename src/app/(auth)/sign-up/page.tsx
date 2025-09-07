@@ -4,13 +4,12 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 
-import { useSupabase } from "@/app/_components/supabase/supabase-provider";
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
+import { AUTH_MESSAGES } from "@/app/(auth)/constants/auth-messages";
+import { useSignUp } from "@/app/(auth)/_hooks/use-sign-up";
 
 import AuthContainer from "@/app/(auth)/_components/auth-container";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
@@ -22,9 +21,6 @@ import FormPasswordField from "@/app/_components/form/form-password-field";
 import FormTextField from "@/app/_components/form/form-text-field";
 
 const SignUpPage = () => {
-  const supabase = useSupabase();
-  const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { control, handleSubmit } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -36,25 +32,11 @@ const SignUpPage = () => {
     },
   });
 
-  const onSubmit = async (data: SignUpSchema) => {
-    setErrorMessage(null);
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          first_name: data.firstName,
-          last_name: data.lastName,
-          birth_date: data.birthDate,
-        },
-      },
-    });
+  const { signUpMutation, isLoading, errorMessage, handleCloseSnackbar } =
+    useSignUp();
 
-    if (error) {
-      setErrorMessage(error.message);
-    } else {
-      router.push("/verification");
-    }
+  const onSubmit = (data: SignUpSchema) => {
+    signUpMutation.mutate(data);
   };
 
   return (
@@ -87,6 +69,7 @@ const SignUpPage = () => {
               label="Email"
               type="email"
               fullWidth
+              autoComplete="username"
             />
             <FormTextField
               control={control}
@@ -105,9 +88,16 @@ const SignUpPage = () => {
               name="password"
               label="Password"
               fullWidth
+              autoComplete="current-password"
             />
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Sign Up
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isLoading}
+            >
+              {isLoading ? AUTH_MESSAGES.SIGNING_UP : AUTH_MESSAGES.SIGN_UP}
             </Button>
           </Stack>
         </form>
@@ -128,7 +118,7 @@ const SignUpPage = () => {
       <SnackbarAlert
         message={errorMessage}
         severity="error"
-        onClose={() => setErrorMessage(null)}
+        onClose={handleCloseSnackbar}
       />
     </AuthLayout>
   );

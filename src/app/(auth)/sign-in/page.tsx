@@ -8,14 +8,11 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Facebook from "@mui/icons-material/Facebook";
 import Google from "@mui/icons-material/Google";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-
-import { useSupabase } from "@/app/_components/supabase/supabase-provider";
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
-
+import { AUTH_MESSAGES } from "@/app/(auth)/constants/auth-messages";
+import { useSignIn } from "@/app/(auth)/_hooks/use-sign-in";
 import AuthContainer from "@/app/(auth)/_components/auth-container";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import AuthLayout from "@/app/(auth)/_components/auth-layout";
@@ -26,9 +23,6 @@ import FormPasswordField from "@/app/_components/form/form-password-field";
 import FormTextField from "@/app/_components/form/form-text-field";
 
 const SignInPage = () => {
-  const supabase = useSupabase();
-  const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { control, handleSubmit } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -38,44 +32,25 @@ const SignInPage = () => {
     },
   });
 
-  const onSubmit = async (data: SignInSchema) => {
-    setErrorMessage(null); // Clear previous errors
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
+  const {
+    signInMutation,
+    googleSignInMutation,
+    facebookSignInMutation,
+    isLoading,
+    errorMessage,
+    handleCloseSnackbar,
+  } = useSignIn();
 
-    if (error) {
-      setErrorMessage(error.message);
-    } else {
-      router.push("/");
-    }
+  const onSubmit = (data: SignInSchema) => {
+    signInMutation.mutate(data);
   };
 
-  const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-    }
+  const handleGoogleSignIn = () => {
+    googleSignInMutation.mutate();
   };
 
-  const handleFacebookSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-    }
+  const handleFacebookSignIn = () => {
+    facebookSignInMutation.mutate();
   };
 
   return (
@@ -88,8 +63,20 @@ const SignInPage = () => {
       <AuthContainer>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
-            <FormTextField control={control} name="email" label="Email" fullWidth />
-            <FormPasswordField control={control} name="password" label="Password" fullWidth />
+            <FormTextField
+              control={control}
+              name="email"
+              label="Email"
+              fullWidth
+              autoComplete="username"
+            />
+            <FormPasswordField
+              control={control}
+              name="password"
+              label="Password"
+              fullWidth
+              autoComplete="current-password"
+            />
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -97,10 +84,7 @@ const SignInPage = () => {
             >
               <FormControlLabel
                 control={
-                  <Checkbox
-                    {...control.register("remember")}
-                    name="remember"
-                  />
+                  <Checkbox {...control.register("remember")} name="remember" />
                 }
                 label="Remember me"
               />
@@ -108,8 +92,14 @@ const SignInPage = () => {
                 <Link href="/forgot-password">Forgot password?</Link>
               </Typography>
             </Stack>
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Log In
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isLoading}
+            >
+              {isLoading ? AUTH_MESSAGES.LOGGING_IN : AUTH_MESSAGES.LOG_IN}
             </Button>
           </Stack>
         </form>
@@ -127,6 +117,7 @@ const SignInPage = () => {
             startIcon={<Google />}
             fullWidth
             onClick={handleGoogleSignIn}
+            disabled={isLoading}
           >
             Google
           </Button>
@@ -136,6 +127,7 @@ const SignInPage = () => {
             startIcon={<Facebook />}
             fullWidth
             onClick={handleFacebookSignIn}
+            disabled={isLoading}
           >
             Facebook
           </Button>
@@ -151,7 +143,7 @@ const SignInPage = () => {
       <SnackbarAlert
         message={errorMessage}
         severity="error"
-        onClose={() => setErrorMessage(null)}
+        onClose={handleCloseSnackbar}
       />
     </AuthLayout>
   );
