@@ -2,7 +2,7 @@
 
 import { Controller, FieldValues, UseControllerProps } from "react-hook-form";
 
-import TextField, { TextFieldProps } from "../common/text-field";
+import TextField, { TextFieldProps } from "@/app/_components/common/text-field";
 
 type FormTextFieldProps<T extends FieldValues> = TextFieldProps &
   UseControllerProps<T>;

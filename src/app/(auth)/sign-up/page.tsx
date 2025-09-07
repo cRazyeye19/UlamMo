@@ -12,14 +12,14 @@ import { useRouter } from "next/navigation";
 import { useSupabase } from "@/app/_components/supabase/supabase-provider";
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
 
-import AuthContainer from "../_components/auth-container";
-import AuthHeader from "../_components/auth-header";
-import AuthLayout from "../_components/auth-layout";
-import { SignUpSchema, signUpSchema } from "../_components/schemas";
-import Button from "../../_components/common/button";
-import Link from "../../_components/common/link";
-import FormPasswordField from "../../_components/form/form-password-field";
-import FormTextField from "../../_components/form/form-text-field";
+import AuthContainer from "@/app/(auth)/_components/auth-container";
+import AuthHeader from "@/app/(auth)/_components/auth-header";
+import AuthLayout from "@/app/(auth)/_components/auth-layout";
+import { SignUpSchema, signUpSchema } from "@/app/(auth)/_components/schemas";
+import Button from "@/app/_components/common/button";
+import Link from "@/app/_components/common/link";
+import FormPasswordField from "@/app/_components/form/form-password-field";
+import FormTextField from "@/app/_components/form/form-text-field";
 
 const SignUpPage = () => {
   const supabase = useSupabase();

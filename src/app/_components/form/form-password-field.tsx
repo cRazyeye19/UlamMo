@@ -7,7 +7,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useState } from "react";
 import { Controller, FieldValues, UseControllerProps } from "react-hook-form";
 
-import TextField, { TextFieldProps } from "../common/text-field";
+import TextField, { TextFieldProps } from "@/app/_components/common/text-field";
 
 type FormPasswordFieldProps<T extends FieldValues> = TextFieldProps &
   UseControllerProps<T>;
