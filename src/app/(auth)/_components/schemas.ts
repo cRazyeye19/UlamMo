@@ -17,3 +17,9 @@ export const signUpSchema = z.object({
 });
 
 export type SignUpSchema = z.infer<typeof signUpSchema>;
+
+export const otpSchema = z.object({
+  otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits"),
+});
+
+export type OtpSchema = z.infer<typeof otpSchema>;

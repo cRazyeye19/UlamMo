@@ -8,8 +8,13 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Facebook from "@mui/icons-material/Facebook";
 import Google from "@mui/icons-material/Google";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+
+import { useSupabase } from "@/app/_components/supabase/supabase-provider";
+import SnackbarAlert from "@/app/_components/common/snackbar-alert";
 
 import AuthContainer from "../_components/auth-container";
 import AuthHeader from "../_components/auth-header";
@@ -21,6 +26,9 @@ import FormPasswordField from "../../_components/form/form-password-field";
 import FormTextField from "../../_components/form/form-text-field";
 
 const SignInPage = () => {
+  const supabase = useSupabase();
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { control, handleSubmit } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -30,8 +38,44 @@ const SignInPage = () => {
     },
   });
 
-  const onSubmit = (data: SignInSchema) => {
-    console.log(data);
+  const onSubmit = async (data: SignInSchema) => {
+    setErrorMessage(null); // Clear previous errors
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+    } else {
+      router.push("/");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+    }
   };
 
   return (
@@ -82,6 +126,7 @@ const SignInPage = () => {
             color="secondary"
             startIcon={<Google />}
             fullWidth
+            onClick={handleGoogleSignIn}
           >
             Google
           </Button>
@@ -90,6 +135,7 @@ const SignInPage = () => {
             color="secondary"
             startIcon={<Facebook />}
             fullWidth
+            onClick={handleFacebookSignIn}
           >
             Facebook
           </Button>
@@ -101,6 +147,12 @@ const SignInPage = () => {
           </Typography>
         </Box>
       </AuthContainer>
+
+      <SnackbarAlert
+        message={errorMessage}
+        severity="error"
+        onClose={() => setErrorMessage(null)}
+      />
     </AuthLayout>
   );
 };

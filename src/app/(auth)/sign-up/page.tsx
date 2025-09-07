@@ -4,8 +4,13 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+
+import { useSupabase } from "@/app/_components/supabase/supabase-provider";
+import SnackbarAlert from "@/app/_components/common/snackbar-alert";
 
 import AuthContainer from "../_components/auth-container";
 import AuthHeader from "../_components/auth-header";
@@ -17,6 +22,9 @@ import FormPasswordField from "../../_components/form/form-password-field";
 import FormTextField from "../../_components/form/form-text-field";
 
 const SignUpPage = () => {
+  const supabase = useSupabase();
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { control, handleSubmit } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -28,8 +36,25 @@ const SignUpPage = () => {
     },
   });
 
-  const onSubmit = (data: SignUpSchema) => {
-    console.log(data);
+  const onSubmit = async (data: SignUpSchema) => {
+    setErrorMessage(null);
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          birth_date: data.birthDate,
+        },
+      },
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+    } else {
+      router.push("/verification");
+    }
   };
 
   return (
@@ -43,10 +68,26 @@ const SignUpPage = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             <Stack direction="row" spacing={2}>
-              <FormTextField control={control} name="firstName" label="First Name" fullWidth />
-              <FormTextField control={control} name="lastName" label="Last Name" fullWidth />
+              <FormTextField
+                control={control}
+                name="firstName"
+                label="First Name"
+                fullWidth
+              />
+              <FormTextField
+                control={control}
+                name="lastName"
+                label="Last Name"
+                fullWidth
+              />
             </Stack>
-            <FormTextField control={control} name="email" label="Email" type="email" fullWidth />
+            <FormTextField
+              control={control}
+              name="email"
+              label="Email"
+              type="email"
+              fullWidth
+            />
             <FormTextField
               control={control}
               name="birthDate"
@@ -59,7 +100,12 @@ const SignUpPage = () => {
                 },
               }}
             />
-            <FormPasswordField control={control} name="password" label="Password" fullWidth />
+            <FormPasswordField
+              control={control}
+              name="password"
+              label="Password"
+              fullWidth
+            />
             <Button type="submit" variant="contained" color="primary" fullWidth>
               Sign Up
             </Button>
@@ -78,6 +124,12 @@ const SignUpPage = () => {
           </Typography>
         </Box>
       </AuthContainer>
+
+      <SnackbarAlert
+        message={errorMessage}
+        severity="error"
+        onClose={() => setErrorMessage(null)}
+      />
     </AuthLayout>
   );
 };
