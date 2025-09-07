@@ -11,7 +11,7 @@ import Google from "@mui/icons-material/Google";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
-import { AUTH_MESSAGES } from "@/app/(auth)/constants/auth-messages";
+import { AUTH_MESSAGES } from "@/app/(auth)/_constants/auth-messages";
 import { useSignIn } from "@/app/(auth)/_hooks/use-sign-in";
 import AuthContainer from "@/app/(auth)/_components/auth-container";
 import AuthHeader from "@/app/(auth)/_components/auth-header";

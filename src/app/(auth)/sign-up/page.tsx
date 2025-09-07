@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import SnackbarAlert from "@/app/_components/common/snackbar-alert";
-import { AUTH_MESSAGES } from "@/app/(auth)/constants/auth-messages";
+import { AUTH_MESSAGES } from "@/app/(auth)/_constants/auth-messages";
 import { useSignUp } from "@/app/(auth)/_hooks/use-sign-up";
 
 import AuthContainer from "@/app/(auth)/_components/auth-container";
