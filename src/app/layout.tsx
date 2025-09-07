@@ -2,8 +2,8 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { Roboto } from "next/font/google";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "@/theme";
-import { SupabaseProvider } from "./_components/supabase/supabase-provider";
-import QueryProvider from "./_components/tanstack-query/query-provider";
+import { SupabaseProvider } from "./_components/providers/supabase-provider";
+import QueryProvider from "./_components/providers/query-provider";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { useSupabase } from "@/app/_components/supabase/supabase-provider";
+import { useSupabase } from "@/app/_components/providers/supabase-provider";
 
 export const useEmailVerification = () => {
   const [loading, setLoading] = useState(true);
