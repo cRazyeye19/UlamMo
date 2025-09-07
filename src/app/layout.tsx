@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "@/theme";
 import { SupabaseProvider } from "./_components/supabase/supabase-provider";
+import QueryProvider from "./_components/tanstack-query/query-provider";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -21,7 +22,9 @@ export default function RootLayout({
       <AppRouterCacheProvider>
         <ThemeProvider theme={theme}>
           <body>
-            <SupabaseProvider>{children}</SupabaseProvider>
+            <SupabaseProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </SupabaseProvider>
           </body>
         </ThemeProvider>
       </AppRouterCacheProvider>
